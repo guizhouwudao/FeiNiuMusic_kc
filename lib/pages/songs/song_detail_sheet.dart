@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/router/app_page_route.dart';
 import '../../app/services/feiniu/api_client.dart';
+import '../../app/services/feiniu/auth_service.dart';
 import '../../app/services/feiniu/favorite_service.dart';
 import '../../app/services/feiniu/transcode_service.dart';
 import '../../app/services/player/player_engine.dart';

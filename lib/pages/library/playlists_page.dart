@@ -13,6 +13,7 @@ import 'package:signals_flutter/signals_flutter.dart' hide computed;
 import '../../app/router/app_page_route.dart';
 import '../../app/services/feiniu/api_client.dart';
 import '../../app/services/feiniu/api_models.dart';
+import '../../app/services/feiniu/auth_service.dart';
 import '../../app/services/feiniu/favorite_service.dart';
 import '../../app/services/feiniu/playlist_service.dart';
 import '../../app/services/feiniu/track_service.dart';
