@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/router/app_router.dart';
+import '../../app/services/feiniu/api_client.dart';
+import '../../app/services/feiniu/auth_service.dart';
 import '../../app/state/settings_state.dart';
 import '../../components/index.dart';
 import '../player/widgets/player_background.dart';
@@ -61,6 +64,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: () =>
                         Navigator.pushNamed(context, AppRoutes.accounts),
                   ),
+                  if (AuthService.instance.isAdmin)
+                    AppSettingTile(
+                      title: '用户管理',
+                      subtitle: '管理系统用户与访问权限',
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {
+                        AppToast.show(context, '当前为管理员账号 (protokc)');
+                      },
+                    ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -91,6 +103,38 @@ class _SettingsPageState extends State<SettingsPage> {
               AppSettingSection(
                 title: '功能',
                 children: [
+                  if (AuthService.instance.isAdmin)
+                    AppSettingTile(
+                      title: '音乐库管理',
+                      subtitle: '扫描媒体库、更新元数据与封面',
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () async {
+                        final api = FeiNiuApiClient.instance;
+                        if (api.baseUrl.isEmpty) {
+                          AppToast.show(context, '未连接到飞牛 NAS 服务器');
+                          return;
+                        }
+                        AppToast.show(context, '已向服务端触发媒体库重新扫描');
+                        try {
+                          await api.dio.post('${api.baseUrl}/music/ext/api/library/scan');
+                        } catch (_) {}
+                      },
+                    ),
+                  if (AuthService.instance.isAdmin)
+                    AppSettingTile(
+                      title: '服务器设置',
+                      subtitle: '配置 NAS 连接、落雪音源与扩展服务',
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () async {
+                        final api = FeiNiuApiClient.instance;
+                        if (api.baseUrl.isEmpty) {
+                          AppToast.show(context, '未连接到飞牛 NAS 服务器');
+                          return;
+                        }
+                        final uri = Uri.parse('${api.baseUrl}/music/ext');
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      },
+                    ),
                   // 仅通过 FNID 连接时才显示：候选链路管理只对 FNID 探测有意义，
                   // 通过链接直连时该入口无意义。lastFnId 为空即链接连接。
                   if ((AppFnConnectionSettings.lastFnId ?? '').isNotEmpty)
@@ -232,13 +276,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: () =>
                         Navigator.pushNamed(context, AppRoutes.backupRestore),
                   ),
-                  AppSettingTile(
-                    title: '版本信息',
-                    subtitle: '版本号、检查更新与调试日志',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.versionInfo),
-                  ),
+                  if (AuthService.instance.isAdmin)
+                    AppSettingTile(
+                      title: '关于 / 版本信息',
+                      subtitle: '版本号、检查更新与调试日志',
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.versionInfo),
+                    ),
                   // 权限管理仅 Android 有对应系统权限，桌面端隐藏入口。
                   if (Platform.isAndroid)
                     AppSettingTile(

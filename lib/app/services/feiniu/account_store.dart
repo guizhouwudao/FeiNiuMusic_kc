@@ -403,6 +403,7 @@ class AccountStore {
     required bool relayMode,
     String? fnId,
     String name = '',
+    String? role,
   }) async {
     final api = FeiNiuApiClient.instance;
     final entry = await addOrUpdate(
@@ -416,6 +417,7 @@ class AccountStore {
         relayMode: relayMode,
         accessCode: AppFnConnectionSettings.accessCode,
         fnId: fnId,
+        role: role ?? AuthService.instance.role.value,
         createdAt: DateTime.now(),
       ),
     );
@@ -447,6 +449,7 @@ class AccountStore {
     required bool relayMode,
     String? fnId,
     String name = '',
+    String? role,
   }) async {
     final api = FeiNiuApiClient.instance;
     final list = List<AccountEntry>.from(accounts.value);
@@ -459,6 +462,7 @@ class AccountStore {
         relayMode: relayMode,
         fnId: fnId,
         name: name,
+        role: role,
       );
     }
     final existing = list[index];
@@ -470,6 +474,7 @@ class AccountStore {
       relayMode: relayMode,
       accessCode: () => AppFnConnectionSettings.accessCode,
       fnId: () => fnId,
+      role: role ?? AuthService.instance.role.value ?? existing.role,
       // 本次输入了备注则以本次为准，否则保留原有自定义备注
       name: name.isNotEmpty ? name : null,
     );

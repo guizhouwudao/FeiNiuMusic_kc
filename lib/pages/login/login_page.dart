@@ -378,6 +378,7 @@ class _LoginPageState extends State<LoginPage> {
         relayMode: relayMode,
         fnId: fnId,
         name: name,
+        role: AuthService.instance.role.value,
       );
     } else {
       await AccountStore.instance.persistLogin(
@@ -387,6 +388,7 @@ class _LoginPageState extends State<LoginPage> {
         relayMode: relayMode,
         fnId: fnId,
         name: name,
+        role: AuthService.instance.role.value,
       );
     }
 

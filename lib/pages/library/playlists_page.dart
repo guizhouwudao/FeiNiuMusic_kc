@@ -344,6 +344,10 @@ class _PlaylistsPageState extends State<PlaylistsPage>
 
   /// 导入歌单（网易云 / QQ / 酷狗 / 酷我）：粘贴链接 → 服务端解析并写入，结果展示。
   Future<void> _importPlaylist() async {
+    if (!AuthService.instance.isAdmin) {
+      AppToast.show(context, '该操作需要管理员权限', type: ToastType.error);
+      return;
+    }
     final url = await showDialog<String>(
       context: context,
       builder: (_) => const _PlaylistImportDialog(),
@@ -372,6 +376,10 @@ class _PlaylistsPageState extends State<PlaylistsPage>
   }
 
   Future<void> _createPlaylist() async {
+    if (!AuthService.instance.isAdmin) {
+      AppToast.show(context, '创建歌单需要管理员权限', type: ToastType.error);
+      return;
+    }
     String? coverId;
     await _showPlaylistNameDialog(
       context,
@@ -390,6 +398,10 @@ class _PlaylistsPageState extends State<PlaylistsPage>
   }
 
   Future<void> _renamePlaylist(FeiNiuPlaylist playlist) async {
+    if (!AuthService.instance.isAdmin) {
+      AppToast.show(context, '编辑歌单需要管理员权限', type: ToastType.error);
+      return;
+    }
     // 初始化为现有封面：若用户未重新上传，保存时沿用原封面，
     // 避免 coverId 为空导致服务端清空图片。
     String? coverId = playlist.coverId;
@@ -415,6 +427,10 @@ class _PlaylistsPageState extends State<PlaylistsPage>
   }
 
   Future<void> _deletePlaylist(FeiNiuPlaylist playlist) async {
+    if (!AuthService.instance.isAdmin) {
+      AppToast.show(context, '删除歌单需要管理员权限', type: ToastType.error);
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AppDialog(
@@ -1912,6 +1928,10 @@ Future<bool> showAddToPlaylistDialog(
   BuildContext context, {
   required List<String> songIds,
 }) async {
+  if (!AuthService.instance.isAdmin) {
+    AppToast.show(context, '添加到歌单需要管理员权限', type: ToastType.error);
+    return false;
+  }
   final ids = songIds.where((e) => e.trim().isNotEmpty).toList();
   if (ids.isEmpty) return false;
 

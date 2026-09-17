@@ -268,6 +268,10 @@ class _SongDetailSheetState extends State<SongDetailSheet> {
               title: '下载无损歌曲至 NAS',
               onTap: () async {
                 final nav = Navigator.of(context);
+                if (!AuthService.instance.isAdmin) {
+                  AppToast.show(context, '该操作需要管理员权限', type: ToastType.error);
+                  return;
+                }
                 final api = FeiNiuApiClient.instance;
                 if (api.baseUrl.isEmpty) {
                   AppToast.show(context, '未连接到飞牛 NAS 服务器');

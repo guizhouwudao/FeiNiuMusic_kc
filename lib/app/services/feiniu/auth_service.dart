@@ -19,6 +19,9 @@ class AuthService {
   /// 用户名
   final ValueNotifier<String?> username = ValueNotifier(null);
 
+  /// 当前用户角色（admin / member）
+  final ValueNotifier<String?> role = ValueNotifier(null);
+
   /// 登录中
   final ValueNotifier<bool> isLoggingIn = ValueNotifier(false);
 
@@ -27,7 +30,17 @@ class AuthService {
   // SharedPreferences 键名（仅用于 logout 清理）
   static const String _prefsUsername = 'feiniu_username';
   static const String _prefsPassword = 'feiniu_password';
+  static const String _prefsRole = 'feiniu_user_role';
   static const String _prefsDeviceId = 'feiniu_device_id';
+
+  /// 当前是否为管理员权限
+  bool get isAdmin {
+    final currentRole = role.value?.toLowerCase();
+    if (currentRole == 'admin' || currentRole == 'administrator') return true;
+    final currentName = username.value?.toLowerCase() ?? '';
+    if (currentName == 'protokc' || currentName == 'admin') return true;
+    return false;
+  }
 
   /// 初始化：从 SharedPreferences 恢复认证状态
   Future<void> init() async {
@@ -35,12 +48,14 @@ class AuthService {
     if (hasAuth) {
       final prefs = await SharedPreferences.getInstance();
       final savedUsername = prefs.getString(_prefsUsername) ?? '';
+      final savedRole = prefs.getString(_prefsRole);
       serverUrl.value = FeiNiuApiClient.instance.baseUrl;
       username.value = savedUsername;
+      role.value = savedRole;
       isLoggedIn.value = true;
       if (kDebugMode) {
         debugPrint(
-          '[AuthService] Restored session: $savedUsername @ ${FeiNiuApiClient.instance.baseUrl}',
+          '[AuthService] Restored session: $savedUsername ($savedRole) @ ${FeiNiuApiClient.instance.baseUrl}',
         );
       }
     }
@@ -94,6 +109,9 @@ class AuthService {
       if (response.username != null) {
         await prefs.setString(_prefsUsername, response.username!);
       }
+      if (response.role != null) {
+        await prefs.setString(_prefsRole, response.role!);
+      }
       // 保存密码以便登录页自动填充
       if (password.isNotEmpty) {
         await prefs.setString(_prefsPassword, password);
@@ -101,6 +119,7 @@ class AuthService {
 
       this.serverUrl.value = serverUrl;
       this.username.value = response.username ?? username;
+      this.role.value = response.role;
       isLoggedIn.value = true;
 
       if (kDebugMode) {
@@ -123,6 +142,9 @@ class AuthService {
     isLoggedIn.value = false;
     serverUrl.value = null;
     username.value = null;
+    role.value = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefsRole);
     // 清除连接信息（含安全码）
     await AppFnConnectionSettings.clearConnection();
     if (kDebugMode) {

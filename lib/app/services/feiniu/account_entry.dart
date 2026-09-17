@@ -32,6 +32,9 @@ class AccountEntry {
   /// 若经 FNID 登录，记录用于探测的 FNID
   final String? fnId;
 
+  /// 用户角色（admin 管理员 / member 普通用户）
+  final String? role;
+
   final DateTime createdAt;
 
   const AccountEntry({
@@ -44,8 +47,15 @@ class AccountEntry {
     this.relayMode = false,
     this.accessCode,
     this.fnId,
+    this.role,
     required this.createdAt,
   });
+
+  /// 是否为管理员用户（敏感操作门禁）
+  bool get isAdmin =>
+      (role?.toLowerCase() == 'admin') ||
+      (role?.toLowerCase() == 'administrator') ||
+      (username.toLowerCase() == 'protokc');
 
   /// 去重键：同一 FNID + 同一用户名视为同一账号；无 FNID 时回退
   /// 「同一服务器 + 同一用户名」。
@@ -109,6 +119,7 @@ class AccountEntry {
         'relayMode': relayMode,
         if (accessCode != null) 'accessCode': accessCode,
         if (fnId != null) 'fnId': fnId,
+        if (role != null) 'role': role,
         'createdAtMs': createdAt.millisecondsSinceEpoch,
       };
 
@@ -124,6 +135,7 @@ class AccountEntry {
       relayMode: json['relayMode'] as bool? ?? false,
       accessCode: json['accessCode'] as String?,
       fnId: json['fnId'] as String?,
+      role: json['role'] as String?,
       createdAt: rawCreatedAt is int
           ? DateTime.fromMillisecondsSinceEpoch(rawCreatedAt)
           : DateTime.fromMillisecondsSinceEpoch(0),
@@ -140,6 +152,7 @@ class AccountEntry {
     bool? relayMode,
     String? Function()? accessCode,
     String? Function()? fnId,
+    String? role,
     DateTime? createdAt,
   }) {
     return AccountEntry(
@@ -152,6 +165,7 @@ class AccountEntry {
       relayMode: relayMode ?? this.relayMode,
       accessCode: accessCode != null ? accessCode() : this.accessCode,
       fnId: fnId != null ? fnId() : this.fnId,
+      role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
     );
   }

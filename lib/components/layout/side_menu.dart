@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/router/app_router.dart';
 import '../../app/services/feiniu/account_store.dart';
+import '../../app/services/feiniu/api_client.dart';
+import '../../app/services/feiniu/auth_service.dart';
 import '../account/account_header_card.dart';
+import '../feedback/app_toast.dart';
 import 'base/app_page_scaffold.dart';
 
 class SideMenu extends StatelessWidget {
@@ -72,6 +76,17 @@ class SideMenu extends StatelessWidget {
                               _navigateAndClose(context, AppRoutes.songs),
                         ),
                         _MenuItem(
+                          icon: Icons.folder_open_rounded,
+                          label: '本地音乐',
+                          onTap: () {
+                            if (!AuthService.instance.isAdmin) {
+                              AppToast.show(context, '本地音乐管理仅管理员可用', type: ToastType.error);
+                              return;
+                            }
+                            _navigateAndClose(context, AppRoutes.folders);
+                          },
+                        ),
+                        _MenuItem(
                           icon: Icons.history_rounded,
                           label: '最近',
                           onTap: () =>
@@ -115,6 +130,39 @@ class SideMenu extends StatelessWidget {
                           onTap: () =>
                               _navigateAndClose(context, AppRoutes.playlists),
                         ),
+                        _MenuItem(
+                          icon: Icons.download_done_rounded,
+                          label: '下载',
+                          onTap: () {
+                            if (!AuthService.instance.isAdmin) {
+                              AppToast.show(context, '下载管理仅管理员可用', type: ToastType.error);
+                              return;
+                            }
+                            _pushAndClose(context, AppRoutes.cacheSettings);
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.explore_rounded,
+                          label: '在线歌单',
+                          onTap: () {
+                            if (!AuthService.instance.isAdmin) {
+                              AppToast.show(context, '在线歌单仅管理员可用', type: ToastType.error);
+                              return;
+                            }
+                            _navigateAndClose(context, AppRoutes.playlists);
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.leaderboard_rounded,
+                          label: '在线排行榜',
+                          onTap: () {
+                            if (!AuthService.instance.isAdmin) {
+                              AppToast.show(context, '在线排行榜仅管理员可用', type: ToastType.error);
+                              return;
+                            }
+                            _navigateAndClose(context, AppRoutes.playlists);
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -134,6 +182,20 @@ class SideMenu extends StatelessWidget {
                           label: '设置',
                           onTap: () => _pushAndClose(context, AppRoutes.settings),
                         ),
+                        if (AuthService.instance.isAdmin)
+                          _MenuItem(
+                            icon: Icons.admin_panel_settings_rounded,
+                            label: '后台管理',
+                            onTap: () async {
+                              final api = FeiNiuApiClient.instance;
+                              if (api.baseUrl.isEmpty) {
+                                AppToast.show(context, '未连接到飞牛 NAS 服务器');
+                                return;
+                              }
+                              final uri = Uri.parse('${api.baseUrl}/music/ext');
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            },
+                          ),
                       ],
                     ),
                   ],

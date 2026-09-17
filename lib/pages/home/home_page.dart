@@ -836,10 +836,16 @@ class _HomePageState extends State<HomePage>
                     onTap: _openAlbumsPage,
                   ),
                   HomeShortcutItem(
-                    icon: Icons.music_video_rounded,
-                    label: '风格',
-                    accent: const Color(0xFFF97316),
-                    onTap: _openGenresPage,
+                    icon: Icons.folder_open_rounded,
+                    label: '本地音乐',
+                    accent: const Color(0xFF10B981),
+                    onTap: () {
+                      if (!AuthService.instance.isAdmin) {
+                        AppToast.show(context, '本地音乐管理仅管理员可用', type: ToastType.error);
+                        return;
+                      }
+                      Navigator.of(context).pushNamed(AppRoutes.folders);
+                    },
                   ),
                 ],
               ),
