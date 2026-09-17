@@ -281,7 +281,7 @@ class _SongDetailSheetState extends State<SongDetailSheet> {
                     data: {
                       'guid': song.id,
                       'title': song.title,
-                      'artist': song.artists.isNotEmpty ? song.artists.join(' / ') : song.artist,
+                      'artist': song.artistDisplayName,
                     },
                   );
                   if (resp.statusCode == 200 && resp.data is Map && resp.data['code'] == 0) {

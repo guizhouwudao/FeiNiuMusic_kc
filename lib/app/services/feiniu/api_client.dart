@@ -171,6 +171,8 @@ class FeiNiuApiClient {
 
   // region Token / Auth / Relay 管理
 
+  Dio get dio => _dio;
+
   String get baseUrl => _baseUrl;
   String get token => _token;
   bool get relayMode => _relayMode;
