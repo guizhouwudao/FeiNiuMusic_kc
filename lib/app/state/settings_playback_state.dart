@@ -145,6 +145,7 @@ class AppLaunchUpdateSettings {
 class PlayerBottomActionSettings {
   static const String _prefsShowPlaybackMode =
       'player_bottom_show_playback_mode';
+  static const String _prefsShowSpeed = 'player_bottom_show_speed';
   static const String _prefsShowSleepTimer = 'player_bottom_show_sleep_timer';
   static const String _prefsShowPlaylist = 'player_bottom_show_playlist';
   static const String _prefsShowMore = 'player_bottom_show_more';
@@ -152,12 +153,14 @@ class PlayerBottomActionSettings {
 
   static const List<String> _defaultActionOrder = [
     'playback_mode',
+    'speed',
     'sleep_timer',
     'playlist',
     'more',
   ];
 
   static final ValueNotifier<bool> showPlaybackMode = ValueNotifier(true);
+  static final ValueNotifier<bool> showSpeed = ValueNotifier(true);
   static final ValueNotifier<bool> showSleepTimer = ValueNotifier(true);
   static final ValueNotifier<bool> showPlaylist = ValueNotifier(true);
   static final ValueNotifier<bool> showMore = ValueNotifier(true);
@@ -172,6 +175,7 @@ class PlayerBottomActionSettings {
   static Future<void> _doLoad() async {
     final prefs = await SharedPreferences.getInstance();
     showPlaybackMode.value = prefs.getBool(_prefsShowPlaybackMode) ?? true;
+    showSpeed.value = prefs.getBool(_prefsShowSpeed) ?? true;
     showSleepTimer.value = prefs.getBool(_prefsShowSleepTimer) ?? true;
     showPlaylist.value = prefs.getBool(_prefsShowPlaylist) ?? true;
     showMore.value = prefs.getBool(_prefsShowMore) ?? true;
@@ -207,6 +211,12 @@ class PlayerBottomActionSettings {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsShowPlaybackMode, enabled);
     showPlaybackMode.value = enabled;
+  }
+
+  static Future<void> setShowSpeed(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefsShowSpeed, enabled);
+    showSpeed.value = enabled;
   }
 
   static Future<void> setShowSleepTimer(bool enabled) async {

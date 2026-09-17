@@ -264,6 +264,45 @@ class _SongDetailSheetState extends State<SongDetailSheet> {
               },
             ),
             AppListTile(
+              leading: const Icon(Icons.file_download_outlined),
+              title: '下载无损歌曲至 NAS',
+              onTap: () async {
+                final nav = Navigator.of(context);
+                final api = FeiNiuApiClient.instance;
+                if (api.baseUrl.isEmpty) {
+                  AppToast.show(context, '未连接到飞牛 NAS 服务器');
+                  return;
+                }
+                AppToast.show(context, '正在提交后台下载任务...');
+                try {
+                  final dio = api.dio;
+                  final resp = await dio.post(
+                    '${api.baseUrl}/music/ext/api/song/download',
+                    data: {
+                      'guid': song.id,
+                      'title': song.title,
+                      'artist': song.artists.isNotEmpty ? song.artists.join(' / ') : song.artist,
+                    },
+                  );
+                  if (resp.statusCode == 200 && resp.data is Map && resp.data['code'] == 0) {
+                    if (context.mounted) {
+                      AppToast.show(context, '已加入 NAS 下载任务，正在下载无损 FLAC');
+                    }
+                  } else {
+                    final msg = resp.data is Map ? (resp.data['msg'] ?? '下载失败') : '下载请求失败';
+                    if (context.mounted) {
+                      AppToast.show(context, msg.toString());
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    AppToast.show(context, '下载请求失败: $e');
+                  }
+                }
+                nav.pop();
+              },
+            ),
+            AppListTile(
               leading: const Icon(Icons.add_to_photos_outlined),
               title: '添加到歌单',
               onTap: () async {

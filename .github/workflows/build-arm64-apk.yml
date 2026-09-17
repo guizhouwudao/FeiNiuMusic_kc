@@ -1,0 +1,74 @@
+name: build-arm64-apk
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-android-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: main
+          flutter-version: c97838627ff5c275e9788839d427ab03eb1dfa01
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Generate self-signed keystore if secret not provided
+        run: |
+          if [ -n "${ANDROID_KEYSTORE_BASE64}" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          else
+            keytool -genkey -v -keystore android/app/release.keystore \
+              -alias feiniu_release -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass feiniu123456 -keypass feiniu123456 \
+              -dname "CN=FeiNiuMusic, OU=App, O=KC, L=Guiyang, ST=Guizhou, C=CN"
+            echo "SIGNING_STORE_PASSWORD=feiniu123456" >> $GITHUB_ENV
+            echo "SIGNING_KEY_ALIAS=feiniu_release" >> $GITHUB_ENV
+            echo "SIGNING_KEY_PASSWORD=feiniu123456" >> $GITHUB_ENV
+          fi
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      - run: flutter pub get
+      - run: flutter precache --android
+      - run: |
+          FULL_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          VERSION=${FULL_VERSION%%+*}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Build arm64-v8a Release APK
+        run: flutter build apk --release --split-per-abi --target-platform android-arm64
+        env:
+          SIGNING_STORE_FILE: release.keystore
+          SIGNING_STORE_PASSWORD: ${{ env.SIGNING_STORE_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ env.SIGNING_KEY_ALIAS || secrets.ANDROID_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ env.SIGNING_KEY_PASSWORD || secrets.ANDROID_KEY_PASSWORD }}
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+             FeiNiuMusic-v${VERSION}-Android-arm64-v8a.apk
+          ls -lh FeiNiuMusic-v${VERSION}-Android-arm64-v8a.apk
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiNiuMusic-arm64-v8a
+          path: FeiNiuMusic-v*-Android-arm64-v8a.apk
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: v${{ env.VERSION }}-enhanced
+          name: FeiNiuMusic v${{ env.VERSION }} 飞牛音乐增强版
+          files: FeiNiuMusic-v*-Android-arm64-v8a.apk

@@ -32,6 +32,14 @@ class _PlayerControlsSettingsPageState
           notifier: PlayerBottomActionSettings.showPlaybackMode,
           onChanged: PlayerBottomActionSettings.setShowPlaybackMode,
         );
+      case 'speed':
+        return _BottomActionConfig(
+          key: key,
+          title: '倍速播放按钮',
+          subtitle: '点击快速切换 1.0x / 1.25x / 1.5x / 2.0x / 0.5x / 0.75x',
+          notifier: PlayerBottomActionSettings.showSpeed,
+          onChanged: PlayerBottomActionSettings.setShowSpeed,
+        );
       case 'sleep_timer':
         return _BottomActionConfig(
           key: key,

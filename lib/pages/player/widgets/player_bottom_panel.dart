@@ -452,6 +452,7 @@ class BottomActions extends StatelessWidget {
         return AnimatedBuilder(
           animation: Listenable.merge([
             PlayerBottomActionSettings.showPlaybackMode,
+            PlayerBottomActionSettings.showSpeed,
             PlayerBottomActionSettings.showSleepTimer,
             PlayerBottomActionSettings.showPlaylist,
             PlayerBottomActionSettings.showMore,
@@ -468,6 +469,48 @@ class BottomActions extends StatelessWidget {
                       IconButton(
                         icon: Icon(icon, color: iconColor),
                         onPressed: () => player.cyclePlaybackMode(),
+                      ),
+                    );
+                  }
+                  break;
+                case 'speed':
+                  if (PlayerBottomActionSettings.showSpeed.value) {
+                    actions.add(
+                      ValueListenableBuilder<double>(
+                        valueListenable: AppPlaybackSpeedSettings.speed,
+                        builder: (context, curSpeed, _) {
+                          final isNotNormal = (curSpeed - 1.0).abs() > 0.01;
+                          final speedText = curSpeed == curSpeed.roundToDouble()
+                              ? '${curSpeed.toInt()}.0x'
+                              : '${curSpeed.toStringAsFixed(curSpeed * 10 % 1 == 0 ? 1 : 2)}x';
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              const speeds = [1.0, 1.25, 1.5, 2.0, 0.5, 0.75];
+                              int idx = -1;
+                              for (int i = 0; i < speeds.length; i++) {
+                                if ((speeds[i] - curSpeed).abs() < 0.05) {
+                                  idx = i;
+                                  break;
+                                }
+                              }
+                              final nextSpeed = speeds[(idx + 1) % speeds.length];
+                              player.setSpeed(nextSpeed);
+                              AppToast.show(context, '播放倍速: ${nextSpeed}x');
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                              child: Text(
+                                speedText,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: isNotNormal ? scheme.primary : iconColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   }
